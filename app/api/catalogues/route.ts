@@ -14,21 +14,22 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'No products to publish' }, { status: 400 })
     }
 
-    // Check slug uniqueness
-    const { Items } = await db.send(new QueryCommand({
-      TableName: CATALOGUES_TABLE,
-      KeyConditionExpression: 'catalogueId = :id',
-      ExpressionAttributeValues: { ':id': catalogue.slug },
-    }))
-
     let finalSlug = catalogue.slug
-    if (Items && Items.length > 0) {
-      finalSlug = `${catalogue.slug}-${Date.now()}`
+    try {
+      const { Items } = await db.send(new QueryCommand({
+        TableName: CATALOGUES_TABLE,
+        KeyConditionExpression: 'catalogueId = :id',
+        ExpressionAttributeValues: { ':id': catalogue.slug },
+      }))
+      if (Items && Items.length > 0) {
+        finalSlug = `${catalogue.slug}-${Date.now()}`
+      }
+    } catch (slugErr) {
+      console.error('Slug check error:', slugErr)
     }
 
     const now = new Date().toISOString()
 
-    // Save catalogue
     await db.send(new PutCommand({
       TableName: CATALOGUES_TABLE,
       Item: {
@@ -46,9 +47,9 @@ export async function POST(req: Request) {
       },
     }))
 
-    // Save all products
-    await Promise.all(products.map((p: Record<string, unknown>, i: number) =>
-      db.send(new PutCommand({
+    await Promise.all(products.map((p: Record<string, unknown>, i: number) => {
+      const qty = Number(p.quantity) || 0
+      return db.send(new PutCommand({
         TableName: PRODUCTS_TABLE,
         Item: {
           catalogueId: finalSlug,
@@ -57,23 +58,23 @@ export async function POST(req: Request) {
           brand: p.brand || '',
           category: p.category || '',
           description: p.description || '',
-          mrp: p.mrp ?? null,
-          offerPrice: p.offerPrice ?? null,
-          moq: p.moq ?? 1,
-          quantity: p.quantity ?? 0,
+          mrp: p.mrp != null ? Number(p.mrp) : null,
+          offerPrice: p.offerPrice != null ? Number(p.offerPrice) : null,
+          moq: Number(p.moq) || 1,
+          quantity: qty,
           stockLocation: p.stockLocation || '',
           expiryDate: p.expiryDate || '',
           imageUrl1: p.imageUrl1 || '',
           imageUrl2: p.imageUrl2 || '',
           imageUrl3: p.imageUrl3 || '',
           isActive: true,
-          isSoldOut: (p.quantity as number) === 0,
+          isSoldOut: false,
           isAnonymous: !p.brand,
           displayOrder: i,
           updatedAt: now,
         },
       }))
-    ))
+    }))
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://catalogue.surpluss.co'
 
@@ -85,6 +86,7 @@ export async function POST(req: Request) {
 
   } catch (err) {
     console.error('Publish error:', err)
-    return NextResponse.json({ error: 'Failed to publish' }, { status: 500 })
+    const message = err instanceof Error ? err.message : 'Failed to publish'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
