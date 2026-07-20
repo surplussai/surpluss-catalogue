@@ -18,6 +18,8 @@ const ALIASES: Record<DbField, string[]> = {
   imageUrl1: ['image','image1','image 1','image link','image url','icon image','photo','picture','img url'],
   imageUrl2: ['image2','image 2','image link 2','image url 2'],
   imageUrl3: ['image3','image 3','image link 3','image url 3'],
+  imageUrl4: ['image4','image 4','image link 4','image url 4'],
+  imageUrl5: ['image5','image 5','image link 5','image url 5'],
   ignore: [],
 }
 
@@ -97,6 +99,8 @@ export const useStore = create<State>((set, get) => ({
       const img1 = driveToDirectUrl(get1(row, 'imageUrl1'))
       const img2 = driveToDirectUrl(get1(row, 'imageUrl2'))
       const img3 = driveToDirectUrl(get1(row, 'imageUrl3'))
+      const img4 = driveToDirectUrl(get1(row, 'imageUrl4'))
+      const img5 = driveToDirectUrl(get1(row, 'imageUrl5'))
       const qty = toNum(get1(row, 'quantity'))
       return {
         tempId: i + 1,
@@ -108,7 +112,7 @@ export const useStore = create<State>((set, get) => ({
         quantity: qty ?? 0,
         stockLocation: get1(row, 'stockLocation'),
         expiryDate: get1(row, 'expiryDate'),
-        imageUrl1: img1, imageUrl2: img2, imageUrl3: img3,
+        imageUrl1: img1, imageUrl2: img2, imageUrl3: img3, imageUrl4: img4, imageUrl5: img5,
         images: [img1, img2, img3].filter(Boolean),
         isActive: true,
         isSoldOut: qty === 0,

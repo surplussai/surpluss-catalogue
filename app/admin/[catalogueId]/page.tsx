@@ -174,7 +174,7 @@ export default function AdminCollectionPage({ params }: { params: Promise<{ cata
 
 function ImageUploadSlot({ url, slot, productId, onUploaded }: {
   url: string
-  slot: '1' | '2' | '3'
+  slot: '1' | '2' | '3' | '4' | '5'
   productId: string
   onUploaded: (url: string) => void
 }) {
@@ -263,8 +263,8 @@ function ProductRow({ product: p, saving, onUpdate }: {
     setEditing(false)
   }
 
-  function handleImageUploaded(slot: '1' | '2' | '3', url: string) {
-    const key = `imageUrl${slot}` as 'imageUrl1' | 'imageUrl2' | 'imageUrl3' | 'imageUrl4' | 'imageUrl5'
+  function handleImageUploaded(slot: '1' | '2' | '3' | '4' | '5', url: string) {
+    const key = `imageUrl${slot}` as 'imageUrl1' | 'imageUrl2' | 'imageUrl3' | 'imageUrl4' | 'imageUrl5' | 'imageUrl4' | 'imageUrl5'
     setLocalImgs(prev => ({ ...prev, [key]: url }))
     onUpdate({ [key]: url })
   }
