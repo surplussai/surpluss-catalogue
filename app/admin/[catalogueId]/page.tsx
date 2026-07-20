@@ -247,6 +247,8 @@ function ProductRow({ product: p, saving, onUpdate }: {
     imageUrl1: p.imageUrl1,
     imageUrl2: p.imageUrl2,
     imageUrl3: p.imageUrl3,
+    imageUrl4: p.imageUrl4,
+    imageUrl5: p.imageUrl5,
   })
 
   function save() {
@@ -262,7 +264,7 @@ function ProductRow({ product: p, saving, onUpdate }: {
   }
 
   function handleImageUploaded(slot: '1' | '2' | '3', url: string) {
-    const key = `imageUrl${slot}` as 'imageUrl1' | 'imageUrl2' | 'imageUrl3'
+    const key = `imageUrl${slot}` as 'imageUrl1' | 'imageUrl2' | 'imageUrl3' | 'imageUrl4' | 'imageUrl5'
     setLocalImgs(prev => ({ ...prev, [key]: url }))
     onUpdate({ [key]: url })
   }
@@ -275,8 +277,14 @@ function ProductRow({ product: p, saving, onUpdate }: {
           {localImgs.imageUrl1 && (
             <ImageUploadSlot url={localImgs.imageUrl2} slot="2" productId={p.productId} onUploaded={url => handleImageUploaded('2', url)} />
           )}
-          {localImgs.imageUrl1 && localImgs.imageUrl2 && (
+          {localImgs.imageUrl2 && (
             <ImageUploadSlot url={localImgs.imageUrl3} slot="3" productId={p.productId} onUploaded={url => handleImageUploaded('3', url)} />
+          )}
+          {localImgs.imageUrl3 && (
+            <ImageUploadSlot url={localImgs.imageUrl4} slot="4" productId={p.productId} onUploaded={url => handleImageUploaded('4', url)} />
+          )}
+          {localImgs.imageUrl4 && (
+            <ImageUploadSlot url={localImgs.imageUrl5} slot="5" productId={p.productId} onUploaded={url => handleImageUploaded('5', url)} />
           )}
         </div>
 

@@ -120,7 +120,7 @@ export default function CatalogueClient({ catalogue, products, shareUrl, waNumbe
   }, [shareUrl, waNumber])
 
   const primaryImg = (p: Product) => p.imageUrl1 || p.imageUrl2 || p.imageUrl3 || ''
-  const allImgs = (p: Product) => [p.imageUrl1, p.imageUrl2, p.imageUrl3].filter(Boolean) as string[]
+  const allImgs = (p: Product) => [p.imageUrl1, p.imageUrl2, p.imageUrl3, p.imageUrl4, p.imageUrl5].filter(Boolean) as string[]
 
   return (
     <div className="min-h-screen bg-white">

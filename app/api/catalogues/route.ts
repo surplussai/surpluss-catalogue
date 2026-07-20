@@ -67,6 +67,8 @@ export async function POST(req: Request) {
           imageUrl1: p.imageUrl1 || '',
           imageUrl2: p.imageUrl2 || '',
           imageUrl3: p.imageUrl3 || '',
+          imageUrl4: p.imageUrl4 || '',
+          imageUrl5: p.imageUrl5 || '',
           isActive: true,
           isSoldOut: false,
           isAnonymous: !p.brand,

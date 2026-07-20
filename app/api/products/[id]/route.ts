@@ -16,7 +16,7 @@ export async function PATCH(req: Request, { params }: Params) {
   const allowed = [
     'name', 'brand', 'description', 'mrp', 'offerPrice',
     'moq', 'quantity', 'stockLocation', 'expiryDate',
-    'imageUrl1', 'imageUrl2', 'imageUrl3',
+    'imageUrl1', 'imageUrl2', 'imageUrl3', 'imageUrl4', 'imageUrl5',
     'isActive', 'isSoldOut', 'isAnonymous',
   ]
 
