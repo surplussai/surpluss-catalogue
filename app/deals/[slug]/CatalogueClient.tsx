@@ -62,11 +62,6 @@ function ImageCarousel({ images, alt }: { images: string[]; alt: string }) {
   )
 }
 
-function ProductImage({ src, alt, className }: { src: string; alt: string; className: string }) {
-  if (!src) return null
-  return <img src={src} alt={alt} className={className} loading="lazy"
-    onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
-}
 
 export default function CatalogueClient({ catalogue, products, shareUrl, waNumber }: Props) {
   const [query, setQuery] = useState('')
