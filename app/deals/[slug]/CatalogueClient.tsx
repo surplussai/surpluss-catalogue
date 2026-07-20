@@ -1,4 +1,5 @@
 'use client'
+import Image from 'next/image'
 import { useState, useMemo, useCallback } from 'react'
 import type { Catalogue, Product } from '@/types'
 import { formatPrice, calcDiscount, buildWAMessage } from '@/lib/utils'
@@ -87,7 +88,7 @@ export default function CatalogueClient({ catalogue, products, shareUrl, waNumbe
         <div className="max-w-5xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center font-bold text-[#0F2557] text-sm shrink-0">S</div>
+              <Image src="/surpluss-logo.png" alt="Surpluss" width={80} height={32} className="h-8 w-auto object-contain" priority />
               <div>
                 <div className="text-white font-bold text-sm leading-none">Surpluss</div>
                 <div className="text-white/50 text-[10px] uppercase tracking-wide mt-0.5">Global inventory exchange</div>
