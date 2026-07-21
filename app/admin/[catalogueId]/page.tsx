@@ -1,6 +1,7 @@
 'use client'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import type { Catalogue, Product } from '@/types'
 
 export default function AdminCollectionPage({ params }: { params: Promise<{ catalogueId: string }> }) {
@@ -15,6 +16,9 @@ export default function AdminCollectionPage({ params }: { params: Promise<{ cata
   const [addingProduct, setAddingProduct] = useState(false)
   const [newProduct, setNewProduct] = useState({ name: '', brand: '', offerPrice: '', mrp: '', moq: '1', quantity: '', stockLocation: '', description: '', condition: 'Excess stock' })
   const [addSaving, setAddSaving] = useState(false)
+  const [deleting, setDeleting] = useState<string | null>(null)
+  const [dragIdx, setDragIdx] = useState<number | null>(null)
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null)
 
   const appUrl = typeof window !== 'undefined'
     ? (process.env.NEXT_PUBLIC_APP_URL || 'https://catalogue.surpluss.co')
@@ -101,6 +105,45 @@ export default function AdminCollectionPage({ params }: { params: Promise<{ cata
       alert(data.error || 'Failed to add product')
     }
     setAddSaving(false)
+  }
+
+  async function deleteProduct(productId: string, productName: string) {
+    if (!confirm(`Delete "${productName}"? This cannot be undone.`)) return
+    setDeleting(productId)
+    try {
+      const res = await fetch(`/api/products/${productId}?catalogueId=${encodeURIComponent(catalogueId)}`, { method: 'DELETE' })
+      if (res.ok) {
+        setProducts(prev => prev.filter(p => p.productId !== productId))
+      } else {
+        alert('Failed to delete product')
+      }
+    } catch {
+      alert('Failed to delete product')
+    }
+    setDeleting(null)
+  }
+
+  async function saveReorder(reordered: Product[]) {
+    try {
+      await fetch('/api/products/reorder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ catalogueId, order: reordered.map(p => p.productId) }),
+      })
+    } catch { /* best-effort */ }
+  }
+
+  function handleDragStart(idx: number) { setDragIdx(idx) }
+  function handleDragOver(e: React.DragEvent, idx: number) { e.preventDefault(); setDragOverIdx(idx) }
+  function handleDrop(toIdx: number) {
+    if (dragIdx === null || dragIdx === toIdx) { setDragIdx(null); setDragOverIdx(null); return }
+    const reordered = [...products]
+    const [moved] = reordered.splice(dragIdx, 1)
+    reordered.splice(toIdx, 0, moved)
+    setProducts(reordered)
+    setDragIdx(null)
+    setDragOverIdx(null)
+    saveReorder(reordered)
   }
 
   if (loading) return (
@@ -241,9 +284,19 @@ export default function AdminCollectionPage({ params }: { params: Promise<{ cata
             </div>
           )}
           <div className="divide-y divide-gray-100">
-            {products.map(p => (
-              <ProductRow key={p.productId} product={p} saving={saving === p.productId}
-                onUpdate={updates => updateProduct(p.productId, updates)} />
+            {products.map((p, idx) => (
+              <div key={p.productId}
+                draggable
+                onDragStart={() => handleDragStart(idx)}
+                onDragOver={e => handleDragOver(e, idx)}
+                onDrop={() => handleDrop(idx)}
+                onDragEnd={() => { setDragIdx(null); setDragOverIdx(null) }}
+                className={`transition-all ${dragOverIdx === idx && dragIdx !== idx ? 'border-t-2 border-[#0F2557]' : ''} ${dragIdx === idx ? 'opacity-40' : ''}`}>
+                <ProductRow product={p} saving={saving === p.productId}
+                  onUpdate={updates => updateProduct(p.productId, updates)}
+                  onDelete={() => deleteProduct(p.productId, p.name)}
+                  isDeleting={deleting === p.productId} />
+              </div>
             ))}
           </div>
         </div>
@@ -313,10 +366,12 @@ function ImageUploadSlot({ url, slot, productId, onUploaded }: {
   )
 }
 
-function ProductRow({ product: p, saving, onUpdate }: {
+function ProductRow({ product: p, saving, onUpdate, onDelete, isDeleting }: {
   product: Product
   saving: boolean
   onUpdate: (updates: Partial<Product>) => void
+  onDelete: () => void
+  isDeleting: boolean
 }) {
   const [editing, setEditing] = useState(false)
   const [offerPrice, setOfferPrice] = useState(String(p.offerPrice ?? ''))
@@ -364,6 +419,12 @@ function ProductRow({ product: p, saving, onUpdate }: {
   return (
     <div className={`px-5 py-4 transition-colors ${!p.isActive ? 'opacity-50 bg-gray-50' : ''}`}>
       <div className="flex items-start gap-3">
+        {/* Drag handle */}
+        <div className="cursor-grab active:cursor-grabbing text-gray-300 hover:text-gray-500 pt-1 shrink-0 select-none" title="Drag to reorder">
+          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M7 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 2zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 14zm6-8a2 2 0 1 0-.001-4.001A2 2 0 0 0 13 6zm0 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 14z"/>
+          </svg>
+        </div>
         <div className="flex gap-1.5 shrink-0">
           <ImageUploadSlot url={localImgs.imageUrl1} slot="1" productId={p.productId} onUploaded={url => handleImageUploaded('1', url)} />
           {localImgs.imageUrl1 && (
@@ -389,6 +450,13 @@ function ProductRow({ product: p, saving, onUpdate }: {
             <div className="flex items-center gap-1.5 shrink-0">
               {p.isSoldOut && <span className="text-[10px] font-bold text-red-600 bg-red-50 border border-red-200 px-2 py-0.5 rounded">SOLD OUT</span>}
               {!p.isActive && <span className="text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded">INACTIVE</span>}
+              <button onClick={onDelete} disabled={isDeleting}
+                className="w-6 h-6 flex items-center justify-center rounded text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-40"
+                title="Delete product">
+                {isDeleting
+                  ? <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                  : <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>}
+              </button>
             </div>
           </div>
 

@@ -1,6 +1,6 @@
 'use client'
 import Image from 'next/image'
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useRef } from 'react'
 import type { Catalogue, Product } from '@/types'
 import { formatPrice, calcDiscount, buildWAMessage } from '@/lib/utils'
 
@@ -71,7 +71,9 @@ export default function CatalogueClient({ catalogue, products, shareUrl, waNumbe
   const [modal, setModal] = useState<Product | null>(null)
   const [showInq, setShowInq] = useState(false)
   const [inqDone, setInqDone] = useState(false)
+  const [inqSending, setInqSending] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [inqForm, setInqForm] = useState({ name: '', company: '', phone: '', email: '', quantity: '', message: '' })
 
   const categories = useMemo(() =>
     ['all', ...Array.from(new Set(products.map(p => p.category).filter(Boolean)))],
@@ -223,7 +225,7 @@ export default function CatalogueClient({ catalogue, products, shareUrl, waNumbe
               const img = primaryImg(p)
               const d = calcDiscount(p.mrp, p.offerPrice)
               return (
-                <div key={p.productId} onClick={() => { setModal(p); setShowInq(false); setInqDone(false) }}
+                <div key={p.productId} onClick={() => { setModal(p); setShowInq(false); setInqDone(false); setInqSending(false); setInqForm({ name: '', company: '', phone: '', email: '', quantity: '', message: '' }) }}
                   className="bg-white border border-gray-200 rounded-xl overflow-hidden cursor-pointer hover:border-[#0F2557] hover:shadow-md hover:-translate-y-0.5 transition-all">
                   <div className="aspect-square bg-gray-50 relative flex items-center justify-center overflow-hidden">
                     {img ? <img src={img} alt={p.name} className="w-full h-full object-cover" onError={e => { (e.target as HTMLImageElement).style.display='none' }} /> : <span className="text-4xl">📦</span>}
@@ -252,7 +254,7 @@ export default function CatalogueClient({ catalogue, products, shareUrl, waNumbe
               const img = primaryImg(p)
               const d = calcDiscount(p.mrp, p.offerPrice)
               return (
-                <div key={p.productId} onClick={() => { setModal(p); setShowInq(false); setInqDone(false) }}
+                <div key={p.productId} onClick={() => { setModal(p); setShowInq(false); setInqDone(false); setInqSending(false); setInqForm({ name: '', company: '', phone: '', email: '', quantity: '', message: '' }) }}
                   className="bg-white border border-gray-200 rounded-xl overflow-hidden cursor-pointer hover:border-[#0F2557] hover:shadow-sm transition-all flex">
                   <div className="w-24 h-24 bg-gray-50 flex items-center justify-center shrink-0 relative overflow-hidden">
                     {img ? <img src={img} alt={p.name} className="w-full h-full object-cover" onError={e => { (e.target as HTMLImageElement).style.display='none' }} /> : <span className="text-2xl">📦</span>}
@@ -325,21 +327,42 @@ export default function CatalogueClient({ catalogue, products, shareUrl, waNumbe
                   <div className="border border-gray-200 rounded-xl p-4 mb-2">
                     <div className="text-xs font-bold text-[#0F2557] uppercase tracking-wide mb-3">Send Inquiry</div>
                     <div className="grid grid-cols-2 gap-2 mb-2">
-                      <input className="border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#0F2557]" id="inq-name" placeholder="Your name *" />
-                      <input className="border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#0F2557]" placeholder="Company" />
+                      <input className="border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#0F2557]"
+                        placeholder="Your name *" value={inqForm.name} onChange={e => setInqForm(f => ({ ...f, name: e.target.value }))} />
+                      <input className="border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#0F2557]"
+                        placeholder="Company" value={inqForm.company} onChange={e => setInqForm(f => ({ ...f, company: e.target.value }))} />
                     </div>
                     <div className="grid grid-cols-2 gap-2 mb-2">
-                      <input className="border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#0F2557]" id="inq-phone" placeholder="Phone / WhatsApp *" type="tel" />
-                      <input className="border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#0F2557]" placeholder="Qty needed" type="number" />
+                      <input className="border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#0F2557]"
+                        placeholder="Phone / WhatsApp *" type="tel" value={inqForm.phone} onChange={e => setInqForm(f => ({ ...f, phone: e.target.value }))} />
+                      <input className="border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#0F2557]"
+                        placeholder="Qty needed" type="number" value={inqForm.quantity} onChange={e => setInqForm(f => ({ ...f, quantity: e.target.value }))} />
                     </div>
-                    <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#0F2557] mb-2" placeholder="Email address" type="email" />
-                    <textarea className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#0F2557] resize-none mb-3" rows={2} placeholder="Any specific requirements..." />
-                    <button onClick={() => {
-                      const name = (document.getElementById('inq-name') as HTMLInputElement)?.value?.trim()
-                      const phone = (document.getElementById('inq-phone') as HTMLInputElement)?.value?.trim()
-                      if (!name || !phone) { alert('Please enter your name and phone number'); return }
+                    <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#0F2557] mb-2"
+                      placeholder="Email address" type="email" value={inqForm.email} onChange={e => setInqForm(f => ({ ...f, email: e.target.value }))} />
+                    <textarea className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#0F2557] resize-none mb-3"
+                      rows={2} placeholder="Any specific requirements..." value={inqForm.message} onChange={e => setInqForm(f => ({ ...f, message: e.target.value }))} />
+                    <button disabled={inqSending} onClick={async () => {
+                      if (!inqForm.name.trim() || !inqForm.phone.trim()) { alert('Please enter your name and phone number'); return }
+                      setInqSending(true)
+                      try {
+                        await fetch('/api/inquiries', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            catalogueId: catalogue.catalogueId,
+                            productId: modal?.productId || '',
+                            productName: modal?.name || '',
+                            catalogueName: catalogue.name,
+                            ...inqForm,
+                          }),
+                        })
+                      } catch { /* best-effort */ }
+                      setInqSending(false)
                       setInqDone(true)
-                    }} className="w-full bg-[#0F2557] text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-[#1A3570]">Send inquiry</button>
+                    }} className="w-full bg-[#0F2557] text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-[#1A3570] disabled:opacity-60">
+                      {inqSending ? 'Sending…' : 'Send inquiry'}
+                    </button>
                   </div>
                 )}
                 {inqDone && (

@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import type { Catalogue } from '@/types'
 import { formatDate } from '@/lib/utils'
 
@@ -32,7 +33,7 @@ export default function AdminPage() {
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-[#0F2557] px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center font-bold text-[#0F2557] text-sm">S</div>
+          <Image src="/surpluss-logo.png" alt="Surpluss" width={32} height={32} className="h-8 w-8 object-contain rounded-lg bg-white p-0.5" priority />
           <div><div className="text-white font-bold text-sm">Surpluss</div><div className="text-white/50 text-[10px] uppercase tracking-wide">Catalogue Admin</div></div>
         </div>
         <Link href="/import" className="flex items-center gap-1.5 bg-[#F5A623] text-[#0F2557] px-4 py-2 rounded-lg text-xs font-bold hover:bg-[#D4881A] transition-colors">

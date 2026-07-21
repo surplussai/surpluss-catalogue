@@ -53,3 +53,25 @@ export async function PATCH(req: Request, { params }: Params) {
     return NextResponse.json({ error: 'Failed to update product' }, { status: 500 })
   }
 }
+
+export async function DELETE(req: Request, { params }: Params) {
+  const { id } = await params
+  const { searchParams } = new URL(req.url)
+  const catalogueId = searchParams.get('catalogueId')
+
+  if (!catalogueId) {
+    return NextResponse.json({ error: 'catalogueId required' }, { status: 400 })
+  }
+
+  try {
+    const { DeleteCommand } = await import('@aws-sdk/lib-dynamodb')
+    await db.send(new DeleteCommand({
+      TableName: PRODUCTS_TABLE,
+      Key: { catalogueId, productId: id },
+    }))
+    return NextResponse.json({ ok: true })
+  } catch (err) {
+    console.error('Delete product error:', err)
+    return NextResponse.json({ error: 'Failed to delete product' }, { status: 500 })
+  }
+}
