@@ -325,16 +325,21 @@ export default function CatalogueClient({ catalogue, products, shareUrl, waNumbe
                   <div className="border border-gray-200 rounded-xl p-4 mb-2">
                     <div className="text-xs font-bold text-[#0F2557] uppercase tracking-wide mb-3">Send Inquiry</div>
                     <div className="grid grid-cols-2 gap-2 mb-2">
-                      <input className="border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#0F2557]" placeholder="Your name" />
+                      <input className="border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#0F2557]" id="inq-name" placeholder="Your name *" />
                       <input className="border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#0F2557]" placeholder="Company" />
                     </div>
                     <div className="grid grid-cols-2 gap-2 mb-2">
-                      <input className="border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#0F2557]" placeholder="Phone / WhatsApp" type="tel" />
+                      <input className="border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#0F2557]" id="inq-phone" placeholder="Phone / WhatsApp *" type="tel" />
                       <input className="border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#0F2557]" placeholder="Qty needed" type="number" />
                     </div>
                     <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#0F2557] mb-2" placeholder="Email address" type="email" />
                     <textarea className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#0F2557] resize-none mb-3" rows={2} placeholder="Any specific requirements..." />
-                    <button onClick={() => setInqDone(true)} className="w-full bg-[#0F2557] text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-[#1A3570]">Send inquiry</button>
+                    <button onClick={() => {
+                      const name = (document.getElementById('inq-name') as HTMLInputElement)?.value?.trim()
+                      const phone = (document.getElementById('inq-phone') as HTMLInputElement)?.value?.trim()
+                      if (!name || !phone) { alert('Please enter your name and phone number'); return }
+                      setInqDone(true)
+                    }} className="w-full bg-[#0F2557] text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-[#1A3570]">Send inquiry</button>
                   </div>
                 )}
                 {inqDone && (

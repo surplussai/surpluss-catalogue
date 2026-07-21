@@ -243,6 +243,10 @@ function ProductRow({ product: p, saving, onUpdate }: {
   const [mrp, setMrp] = useState(String(p.mrp ?? ''))
   const [moq, setMoq] = useState(String(p.moq))
   const [qty, setQty] = useState(String(p.quantity))
+  const [editName, setEditName] = useState(p.name)
+  const [editBrand, setEditBrand] = useState(p.brand || '')
+  const [editLocation, setEditLocation] = useState(p.stockLocation || '')
+  const [editDesc, setEditDesc] = useState(p.description || '')
   const [localImgs, setLocalImgs] = useState({
     imageUrl1: p.imageUrl1,
     imageUrl2: p.imageUrl2,
@@ -259,6 +263,10 @@ function ProductRow({ product: p, saving, onUpdate }: {
       moq: parseInt(moq) || 1,
       quantity: newQty,
       isSoldOut: newQty === 0,
+      name: editName,
+      brand: editBrand,
+      stockLocation: editLocation,
+      description: editDesc,
     })
     setEditing(false)
   }
@@ -322,6 +330,26 @@ function ProductRow({ product: p, saving, onUpdate }: {
                     className="w-full border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:border-[#0F2557]" />
                 </div>
               ))}
+              <div className="col-span-2">
+                <label className="text-[10px] text-gray-400 uppercase font-semibold block mb-0.5">Product name</label>
+                <input value={editName} onChange={e => setEditName(e.target.value)}
+                  className="w-full border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:border-[#0F2557]" />
+              </div>
+              <div className="col-span-2">
+                <label className="text-[10px] text-gray-400 uppercase font-semibold block mb-0.5">Brand</label>
+                <input value={editBrand} onChange={e => setEditBrand(e.target.value)}
+                  className="w-full border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:border-[#0F2557]" />
+              </div>
+              <div className="col-span-2">
+                <label className="text-[10px] text-gray-400 uppercase font-semibold block mb-0.5">Location</label>
+                <input value={editLocation} onChange={e => setEditLocation(e.target.value)}
+                  className="w-full border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:border-[#0F2557]" />
+              </div>
+              <div className="col-span-2">
+                <label className="text-[10px] text-gray-400 uppercase font-semibold block mb-0.5">Description</label>
+                <input value={editDesc} onChange={e => setEditDesc(e.target.value)}
+                  className="w-full border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:border-[#0F2557]" />
+              </div>
             </div>
           )}
 
