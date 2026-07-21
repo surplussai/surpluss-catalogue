@@ -312,7 +312,7 @@ export default function CatalogueClient({ catalogue, products, shareUrl, waNumbe
                     { label: 'MOQ', value: `${modal.moq.toLocaleString('en-IN')} units` },
                     { label: 'Available', value: modal.isSoldOut ? 'Sold out' : modal.quantity > 0 ? `${modal.quantity.toLocaleString('en-IN')} units` : '-' },
                     { label: 'Location', value: modal.stockLocation || '-' },
-                    { label: modal.expiryDate ? 'Expiry' : 'Condition', value: modal.expiryDate || 'Excess stock' },
+                    { label: modal.expiryDate ? 'Expiry' : 'Condition', value: modal.expiryDate || (modal as any).condition || 'Excess stock' },
                   ].map(d => (
                     <div key={d.label} className="bg-white p-3">
                       <div className="text-[10px] text-gray-400 uppercase tracking-wide font-semibold mb-0.5">{d.label}</div>
