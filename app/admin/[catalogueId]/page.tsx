@@ -247,6 +247,8 @@ function ProductRow({ product: p, saving, onUpdate }: {
   const [editBrand, setEditBrand] = useState(p.brand || '')
   const [editLocation, setEditLocation] = useState(p.stockLocation || '')
   const [editDesc, setEditDesc] = useState(p.description || '')
+  const [editCondition, setEditCondition] = useState((p as any).condition || 'Excess stock')
+  const [editExpiry, setEditExpiry] = useState(p.expiryDate || '')
   const [localImgs, setLocalImgs] = useState({
     imageUrl1: p.imageUrl1,
     imageUrl2: p.imageUrl2,
@@ -267,6 +269,8 @@ function ProductRow({ product: p, saving, onUpdate }: {
       brand: editBrand,
       stockLocation: editLocation,
       description: editDesc,
+      condition: editCondition,
+      expiryDate: editExpiry,
     })
     setEditing(false)
   }
@@ -348,6 +352,22 @@ function ProductRow({ product: p, saving, onUpdate }: {
               <div className="col-span-2">
                 <label className="text-[10px] text-gray-400 uppercase font-semibold block mb-0.5">Description</label>
                 <input value={editDesc} onChange={e => setEditDesc(e.target.value)}
+                  className="w-full border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:border-[#0F2557]" />
+              </div>
+              <div className="col-span-2">
+                <label className="text-[10px] text-gray-400 uppercase font-semibold block mb-0.5">Condition</label>
+                <select value={editCondition} onChange={e => setEditCondition(e.target.value)}
+                  className="w-full border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:border-[#0F2557] bg-white">
+                  <option>Excess stock</option>
+                  <option>Near expiry</option>
+                  <option>Refurbished</option>
+                  <option>New</option>
+                  <option>Open box</option>
+                </select>
+              </div>
+              <div className="col-span-2">
+                <label className="text-[10px] text-gray-400 uppercase font-semibold block mb-0.5">Expiry date</label>
+                <input type="date" value={editExpiry} onChange={e => setEditExpiry(e.target.value)}
                   className="w-full border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:border-[#0F2557]" />
               </div>
             </div>

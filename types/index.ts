@@ -29,6 +29,7 @@ export interface Product {
   quantity: number
   stockLocation: string
   expiryDate: string
+  condition: string
   imageUrl1: string
   imageUrl2: string
   imageUrl3: string
@@ -48,6 +49,7 @@ export type DbField =
   | 'mrp' | 'offerPrice' | 'moq' | 'quantity'
   | 'stockLocation' | 'expiryDate'
   | 'imageUrl1' | 'imageUrl2' | 'imageUrl3' | 'imageUrl4' | 'imageUrl5'
+  | 'condition'
   | 'ignore'
 
 export interface RawRow {
@@ -67,6 +69,7 @@ export interface MappedProduct {
   quantity: number
   stockLocation: string
   expiryDate: string
+  condition: string
   imageUrl1: string
   imageUrl2: string
   imageUrl3: string

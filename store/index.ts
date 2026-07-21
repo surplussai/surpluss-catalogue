@@ -20,6 +20,7 @@ const ALIASES: Record<DbField, string[]> = {
   imageUrl3: ['image3','image 3','image link 3','image url 3'],
   imageUrl4: ['image4','image 4','image link 4','image url 4'],
   imageUrl5: ['image5','image 5','image link 5','image url 5'],
+  condition: ['condition','stock condition','item condition'],
   ignore: [],
 }
 
@@ -112,6 +113,7 @@ export const useStore = create<State>((set, get) => ({
         quantity: qty ?? 0,
         stockLocation: get1(row, 'stockLocation'),
         expiryDate: get1(row, 'expiryDate'),
+        condition: get1(row, 'condition') || 'Excess stock',
         imageUrl1: img1, imageUrl2: img2, imageUrl3: img3, imageUrl4: img4, imageUrl5: img5,
         images: [img1, img2, img3].filter(Boolean),
         isActive: true,
