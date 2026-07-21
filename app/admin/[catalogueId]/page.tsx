@@ -363,6 +363,7 @@ function ProductRow({ product: p, saving, onUpdate }: {
                   <option>Refurbished</option>
                   <option>New</option>
                   <option>Open box</option>
+                  <option>Fresh stock</option>
                 </select>
               </div>
               <div className="col-span-2">
