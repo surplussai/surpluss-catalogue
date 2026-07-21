@@ -92,3 +92,40 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }
+
+export async function PUT(req: Request) {
+  try {
+    const { catalogueId, product } = await req.json()
+    if (!catalogueId || !product?.name) {
+      return NextResponse.json({ error: 'Missing catalogueId or product name' }, { status: 400 })
+    }
+    const { v4: uuid } = await import('uuid')
+    const now = new Date().toISOString()
+    const newProduct = {
+      catalogueId,
+      productId: uuid(),
+      name: product.name || '',
+      brand: product.brand || '',
+      category: product.category || '',
+      description: product.description || '',
+      mrp: product.mrp ?? null,
+      offerPrice: product.offerPrice ?? null,
+      moq: Number(product.moq) || 1,
+      quantity: Number(product.quantity) || 0,
+      stockLocation: product.stockLocation || '',
+      expiryDate: product.expiryDate || '',
+      condition: product.condition || 'Excess stock',
+      imageUrl1: '', imageUrl2: '', imageUrl3: '', imageUrl4: '', imageUrl5: '',
+      isActive: true,
+      isSoldOut: product.isSoldOut ?? false,
+      isAnonymous: !product.brand,
+      displayOrder: 999,
+      updatedAt: now,
+    }
+    await db.send(new PutCommand({ TableName: PRODUCTS_TABLE, Item: newProduct }))
+    return NextResponse.json({ product: newProduct })
+  } catch (err) {
+    console.error('Add product error:', err)
+    return NextResponse.json({ error: 'Failed to add product' }, { status: 500 })
+  }
+}

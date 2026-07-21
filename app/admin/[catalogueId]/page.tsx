@@ -12,6 +12,9 @@ export default function AdminCollectionPage({ params }: { params: Promise<{ cata
   const [collSaving, setCollSaving] = useState(false)
   const [collSaved, setCollSaved] = useState(false)
   const [saving, setSaving] = useState<string | null>(null)
+  const [addingProduct, setAddingProduct] = useState(false)
+  const [newProduct, setNewProduct] = useState({ name: '', brand: '', offerPrice: '', mrp: '', moq: '1', quantity: '', stockLocation: '', description: '', condition: 'Excess stock' })
+  const [addSaving, setAddSaving] = useState(false)
 
   const appUrl = typeof window !== 'undefined'
     ? (process.env.NEXT_PUBLIC_APP_URL || 'https://catalogue.surpluss.co')
@@ -64,6 +67,40 @@ export default function AdminCollectionPage({ params }: { params: Promise<{ cata
     })
     setProducts(prev => prev.map(p => p.productId === productId ? { ...p, ...updates } : p))
     setSaving(null)
+  }
+
+  async function addProduct() {
+    if (!newProduct.name) return alert('Product name is required')
+    setAddSaving(true)
+    const qty = parseInt(newProduct.quantity) || 0
+    const res = await fetch('/api/catalogues', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        catalogueId,
+        product: {
+          name: newProduct.name,
+          brand: newProduct.brand,
+          offerPrice: newProduct.offerPrice ? parseFloat(newProduct.offerPrice) : null,
+          mrp: newProduct.mrp ? parseFloat(newProduct.mrp) : null,
+          moq: parseInt(newProduct.moq) || 1,
+          quantity: qty,
+          stockLocation: newProduct.stockLocation,
+          description: newProduct.description,
+          condition: newProduct.condition,
+          isSoldOut: qty === 0,
+        }
+      }),
+    })
+    const data = await res.json()
+    if (data.product) {
+      setProducts(prev => [...prev, data.product])
+      setNewProduct({ name: '', brand: '', offerPrice: '', mrp: '', moq: '1', quantity: '', stockLocation: '', description: '', condition: 'Excess stock' })
+      setAddingProduct(false)
+    } else {
+      alert(data.error || 'Failed to add product')
+    }
+    setAddSaving(false)
   }
 
   if (loading) return (
@@ -159,7 +196,50 @@ export default function AdminCollectionPage({ params }: { params: Promise<{ cata
           <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
             <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wide">{products.length} products</h2>
             <span className="text-xs text-gray-400">Changes reflect on buyer link immediately</span>
+            <button onClick={() => setAddingProduct(a => !a)}
+              className="text-xs font-semibold text-white bg-[#0F2557] px-3 py-1.5 rounded-lg hover:bg-[#1A3570]">
+              {addingProduct ? '× Cancel' : '+ Add product'}
+            </button>
           </div>
+          {addingProduct && (
+            <div className="p-5 border-b border-gray-200 bg-blue-50">
+              <div className="text-xs font-bold text-[#0F2557] uppercase tracking-wide mb-3">New product</div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-2">
+                {[
+                  { label: 'Product name *', val: newProduct.name, key: 'name' },
+                  { label: 'Brand', val: newProduct.brand, key: 'brand' },
+                  { label: 'Offer price', val: newProduct.offerPrice, key: 'offerPrice' },
+                  { label: 'MRP', val: newProduct.mrp, key: 'mrp' },
+                  { label: 'MOQ', val: newProduct.moq, key: 'moq' },
+                  { label: 'Qty available', val: newProduct.quantity, key: 'quantity' },
+                  { label: 'Location', val: newProduct.stockLocation, key: 'stockLocation' },
+                  { label: 'Description', val: newProduct.description, key: 'description' },
+                ].map(f => (
+                  <div key={f.key}>
+                    <label className="text-[10px] text-gray-500 uppercase font-semibold block mb-0.5">{f.label}</label>
+                    <input value={f.val} onChange={e => setNewProduct(p => ({ ...p, [f.key]: e.target.value }))}
+                      className="w-full border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:border-[#0F2557] bg-white" />
+                  </div>
+                ))}
+                <div>
+                  <label className="text-[10px] text-gray-500 uppercase font-semibold block mb-0.5">Condition</label>
+                  <select value={newProduct.condition} onChange={e => setNewProduct(p => ({ ...p, condition: e.target.value }))}
+                    className="w-full border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:border-[#0F2557] bg-white">
+                    <option>Excess stock</option>
+                    <option>Near expiry</option>
+                    <option>Refurbished</option>
+                    <option>New</option>
+                    <option>Open box</option>
+                    <option>Fresh stock</option>
+                  </select>
+                </div>
+              </div>
+              <button onClick={addProduct} disabled={addSaving}
+                className="px-5 py-2 bg-[#0F2557] text-white text-sm font-semibold rounded-lg disabled:opacity-50 hover:bg-[#1A3570]">
+                {addSaving ? 'Adding…' : 'Add product'}
+              </button>
+            </div>
+          )}
           <div className="divide-y divide-gray-100">
             {products.map(p => (
               <ProductRow key={p.productId} product={p} saving={saving === p.productId}
